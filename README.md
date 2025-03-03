@@ -1,9 +1,12 @@
-# Features 
+# Features of Lunar Flash
 It does the aiming at the target in one step
 
 Not only follows enemies in target mode
 
 Faster
+
+Attention, Lunar Flash is an improved version, you can find the original by [clicking here](https://github.com/xxreflextheone/AI-Aimbot)).
+
 
 ## Lunar V2
 Lunar V2 on the other hand, has 25+ customizable settings, UI, improved accuracy, and support for YoloV8, YoloV10, YoloV11, & TensorRT. Xbox & PS4 Controller support.
