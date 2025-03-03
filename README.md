@@ -22,7 +22,7 @@ Lunar LITE has been upgraded to be compatible with [YOLOv8](https://github.com/u
 
 ![Lunar Lite banner](https://imgur.com/iFfaUID)
 
-![Thumbnail](https://github.com/user-attachments/assets/afa30dd2-8168-4c64-999e-bedb0bef4dec)
+![Thumbnail](https://imgur.com/iFfaUID)
 
 <div align="center">
 
