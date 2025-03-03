@@ -1,3 +1,13 @@
+# Features 
+It does the aiming at the target in one step
+
+Not only follows enemies in target mode
+
+Faster
+
+
+
+
 # YoloV11 AI Aimbot - Lunar LITE
 Lunar LITE is built upon [Lunar](https://github.com/zeyad-mansour/lunar).
 
