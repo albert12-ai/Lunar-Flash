@@ -20,7 +20,7 @@ Lunar can be modified to work with a variety of FPS games; however, it is curren
 
 Lunar LITE has been upgraded to be compatible with [YOLOv8](https://github.com/ultralytics/ultralytics) through [YOLOv11](https://github.com/ultralytics/ultralytics)
 
-![Lunar Lite banner](https://github.com/user-attachments/assets/05864acf-cdd1-484f-be79-fa4a9643e8c2)
+![Lunar Lite banner](https://imgur.com/a/WQSixNP)
 
 ![Thumbnail](https://github.com/user-attachments/assets/afa30dd2-8168-4c64-999e-bedb0bef4dec)
 
