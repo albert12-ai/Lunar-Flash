@@ -5,14 +5,6 @@ Not only follows enemies in target mode
 
 Faster
 
-
-
-
-# YoloV11 AI Aimbot - Lunar LITE
-Lunar LITE is built upon [Lunar](https://github.com/zeyad-mansour/lunar).
-
-Lunar LITE offers a triggerbot and updated packages for the orignal [Lunar](https://github.com/zeyad-mansour/lunar).
-
 ## Lunar V2
 Lunar V2 on the other hand, has 25+ customizable settings, UI, improved accuracy, and support for YoloV8, YoloV10, YoloV11, & TensorRT. Xbox & PS4 Controller support.
 
