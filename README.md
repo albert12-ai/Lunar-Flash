@@ -18,7 +18,7 @@ Uses screen capture and an object detection AI model to locate the targets. Does
 
 Lunar can be modified to work with a variety of FPS games; however, it is currently configured for Fortnite - So some modifying to the sensitivity may be necessary.
 
-Lunar LITE has been upgraded to be compatible with [YOLOv8](https://github.com/ultralytics/ultralytics) through [YOLOv11](https://github.com/ultralytics/ultralytics)
+Lunar has been upgraded to be compatible with [YOLOv8](https://github.com/ultralytics/ultralytics) through [YOLOv11](https://github.com/ultralytics/ultralytics)
 
 ![Image](https://github.com/user-attachments/assets/46e5cc63-1896-49be-a7e2-490ffc9656fb)
 <div align="center">
@@ -53,8 +53,5 @@ To collect image data for annotating and training:
 ```           
 python lunar.py collect_data
 ```
-
-## Discord
-Support is only garenteed for Lunar V2. Please don't demand help for LITE.
 
 Join the [Discord](https://discord.gg/St8xd8d9Ts)
