@@ -5,7 +5,7 @@ Not only follows enemies in target mode
 
 Faster
 
-Attention, Lunar Flash is an improved version, you can find the original by [clicking here](https://github.com/xxreflextheone/AI-Aimbot)).
+Attention, Lunar Flash is an improved version, you can find the original by [clicking here](https://github.com/xxreflextheone/AI-Aimbot).
 
 
 ## Lunar V2
