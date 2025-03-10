@@ -3,6 +3,8 @@ It does the aiming at the target in one step
 
 Not only follows enemies in target mode
 
+more CUDA accleration
+
 Faster
 
 Attention, Lunar Flash is an improved version, you can find the original by [clicking here](https://github.com/xxreflextheone/AI-Aimbot).
@@ -46,7 +48,7 @@ Lunar has been upgraded to be compatible with [YOLOv8](https://github.com/ultral
 ## Usage
 If the console is closing immediately, you can run this command to see the errors:
 ```           
-python lunar.py
+python lunar.py virtual
 ```
 To update sensitivity settings:
 ```           
