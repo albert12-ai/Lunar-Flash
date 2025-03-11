@@ -1,0 +1,17 @@
+{
+    "xy_scale": 2.0,
+    "targeting_scale": 2.5,
+    "toggle_key_code": 112,
+    "exit_key_code": 113,
+    "aim_key_code": 6,
+    "min_aim_height": 2.000000238418579,
+    "max_aim_height": 3.9999990463256836,
+    "min_box_height": 40.0,
+    "max_box_height": 300,
+    "confidence": 0.421999990940094,
+    "iou": 0.3100000023841858,
+    "use_trigger_bot": false,
+    "aiming_lerp_factor": 0.6999998092651367,
+    "not_aiming_lerp_factor": 0.32000017166137695,
+    "box_constant": 320
+}
