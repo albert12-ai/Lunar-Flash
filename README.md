@@ -5,7 +5,11 @@ Not only follows enemies in target mode
 
 more CUDA accleration
 
+User Interface
+
 Faster
+
+More customizable
 
 Attention, Lunar Flash is an improved version, you can find the original by [clicking here](https://github.com/xxreflextheone/AI-Aimbot).
 
