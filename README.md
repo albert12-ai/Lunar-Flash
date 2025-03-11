@@ -48,15 +48,7 @@ Lunar has been upgraded to be compatible with [YOLOv8](https://github.com/ultral
 ## Usage
 If the console is closing immediately, you can run this command to see the errors:
 ```           
-python lunar.py virtual
-```
-To update sensitivity settings:
-```           
-python lunar.py setup
-```
-To collect image data for annotating and training:
-```           
-python lunar.py collect_data
-```
+python aimbot.py 
+```      
 
 Join the [Discord](https://discord.gg/St8xd8d9Ts)
