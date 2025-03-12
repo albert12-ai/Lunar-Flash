@@ -3,7 +3,7 @@ It does the aiming at the target in one step
 
 Not only follows enemies in target mode
 
-more CUDA accleration
+More CUDA accleration
 
 Easier to setup
 
