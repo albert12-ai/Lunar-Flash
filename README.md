@@ -5,9 +5,9 @@ Not only follows enemies in target mode
 
 more CUDA accleration
 
-easier to setup
+Easier to setup
 
-smoother feel.
+Smoother feel.
 
 User Interface
 
