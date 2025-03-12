@@ -5,6 +5,10 @@ Not only follows enemies in target mode
 
 more CUDA accleration
 
+easier to setup
+
+smoother feel.
+
 User Interface
 
 Faster
