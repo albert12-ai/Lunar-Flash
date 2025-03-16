@@ -72,8 +72,10 @@ class Aimbot:
     config_path = "lib/config/config.json"
     if not os.path.exists(config_path):
         default_config = {
-            "xy_scale": 1.0, 
-            "targeting_scale": 1.0, 
+            "xy_sens": 5.0,          
+            "targeting_sens": 5.0,    
+            "xy_scale": 10/5.0,        
+            "targeting_scale": 1000/(5.0*5.0),  
             "toggle_key_code": 0x70, 
             "exit_key_code": 0x71,
             "aim_key_code": 0x06, 
@@ -87,7 +89,8 @@ class Aimbot:
             "aiming_lerp_factor": 0.5, 
             "not_aiming_lerp_factor": 0.5, 
             "box_constant": 320,
-            "triggerbot_threshold": 10
+            "triggerbot_threshold": 10,
+            "max_aim_delta": 50     
         }
         os.makedirs("lib/config", exist_ok=True)
         with open(config_path, "w") as f:
@@ -123,10 +126,24 @@ class Aimbot:
         self.idle_smooth = self.config.get("not_aiming_lerp_factor", 0.5)
         self.detection_size = self.config.get("box_constant", 320)
         self.triggerbot_range = self.config.get("triggerbot_threshold", 10)
+        self.max_aim_delta = self.config.get("max_aim_delta", 50)
+
+        # Frissítjük a skálázást az érzékenységi értékek alapján
+        self.update_scaling()
 
         self.key_binding_mode = None
         self.init_gui()
 
+    def update_scaling(self):
+        """
+      
+        """
+        xy_sens = self.sens_settings.get("xy_sens", 5.0)
+        targeting_sens = self.sens_settings.get("targeting_sens", xy_sens)
+        print("[INFO] Your in-game targeting sensitivity must be the same as your scoping sensitivity")
+        self.sens_settings["xy_scale"] = 10 / xy_sens
+        self.sens_settings["targeting_scale"] = 1000 / (targeting_sens * xy_sens)
+    
     def init_gui(self):
         dpg.create_context()
         dpg.create_viewport(title="Aimbot Configuration", width=400, height=800, resizable=False)
@@ -148,8 +165,14 @@ class Aimbot:
             
             with dpg.group():
                 dpg.add_text("Sensitivity")
-                dpg.add_input_float(label="XY Scale", default_value=self.sens_settings["xy_scale"], callback=lambda s, a: self.update_setting("xy_scale", a))
-                dpg.add_input_float(label="ADS Scale", default_value=self.sens_settings["targeting_scale"], callback=lambda s, a: self.update_setting("targeting_scale", a))
+                # Új input mezők az érzékenységi értékekhez
+                dpg.add_input_float(label="XY Sensitivity", default_value=self.sens_settings.get("xy_sens", 5.0),
+                                      callback=lambda s, a: self.update_setting("xy_sens", a))
+                dpg.add_input_float(label="Targeting Sensitivity", default_value=self.sens_settings.get("targeting_sens", 5.0),
+                                      callback=lambda s, a: self.update_setting("targeting_sens", a))
+                # Megjelenítjük a kiszámolt skálázási értékeket (csak olvasható)
+                dpg.add_input_float(label="XY Scale", default_value=self.sens_settings["xy_scale"], readonly=True)
+                dpg.add_input_float(label="ADS Scale", default_value=self.sens_settings["targeting_scale"], readonly=True)
             
             with dpg.group():
                 dpg.add_text("Aimbot Parameters")
@@ -164,6 +187,7 @@ class Aimbot:
                 dpg.add_input_float(label="Aim Smoothing", default_value=self.aim_smooth, callback=lambda s, a: setattr(self, "aim_smooth", a))
                 dpg.add_input_float(label="Idle Smoothing", default_value=self.idle_smooth, callback=lambda s, a: setattr(self, "idle_smooth", a))
                 dpg.add_input_float(label="Detection Area", default_value=self.detection_size, callback=lambda s, a: setattr(self, "detection_size", a))
+                dpg.add_input_float(label="Max Aim Delta", default_value=self.max_aim_delta, callback=lambda s, a: setattr(self, "max_aim_delta", a))
             
             dpg.add_button(label="Save Configuration", callback=self.save_config)
         
@@ -175,9 +199,16 @@ class Aimbot:
 
     def update_setting(self, key, value):
         self.sens_settings[key] = value
+        if key in ["xy_sens", "targeting_sens"]:
+            self.update_scaling()
+        
 
     def save_config(self):
+       
+        self.update_scaling()
         config = {
+            "xy_sens": self.sens_settings.get("xy_sens", 5.0),
+            "targeting_sens": self.sens_settings.get("targeting_sens", 5.0),
             "xy_scale": self.sens_settings["xy_scale"],
             "targeting_scale": self.sens_settings["targeting_scale"],
             "toggle_key_code": self.toggle_key,
@@ -193,7 +224,8 @@ class Aimbot:
             "aiming_lerp_factor": self.aim_smooth,
             "not_aiming_lerp_factor": self.idle_smooth,
             "box_constant": self.detection_size,
-            "triggerbot_threshold": self.triggerbot_range
+            "triggerbot_threshold": self.triggerbot_range,
+            "max_aim_delta": self.max_aim_delta
         }
         with open(self.config_path, "w") as f:
             json.dump(config, f, indent=4)
@@ -297,11 +329,32 @@ class Aimbot:
 
     def aim(self, x, y):
         if self.is_aiming():
+           
             smooth_factor = self.aim_smooth if self.is_ads() else self.idle_smooth
-            new_x = center_x + (x - center_x) * smooth_factor
-            new_y = center_y + (y - center_y) * smooth_factor
-            dx = int(new_x - center_x)
-            dy = int(new_y - center_y)
+            if self.is_ads():
+                sensitivity_scale = self.sens_settings.get("targeting_scale", 1)
+            else:
+                sensitivity_scale = self.sens_settings.get("xy_scale", 1)
+
+           
+            dx = (x - center_x) * smooth_factor * sensitivity_scale
+            dy = (y - center_y) * smooth_factor * sensitivity_scale
+
+            
+            current_magnitude = math.hypot(dx, dy)
+            d = math.dist((x, y), (center_x, center_y))
+            norm_factor = self.detection_size / 2
+            dynamic_max_delta = self.max_aim_delta * (d / norm_factor)
+            dynamic_max_delta = max(dynamic_max_delta, 5)
+
+            if current_magnitude > dynamic_max_delta:
+                scale = dynamic_max_delta / current_magnitude
+                dx = int(dx * scale)
+                dy = int(dy * scale)
+            else:
+                dx = int(dx)
+                dy = int(dy)
+
             self.ii_.mi = MouseInput(dx, dy, 0, 0x0001, 0, ctypes.pointer(self.extra))
             input_struct = Input(ctypes.c_ulong(0), self.ii_)
             ctypes.windll.user32.SendInput(1, ctypes.byref(input_struct), ctypes.sizeof(input_struct))
