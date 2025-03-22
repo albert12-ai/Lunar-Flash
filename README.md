@@ -1,4 +1,6 @@
 # Features of Lunar Flash
+There is a [portable version](https://github.com/albert12-ai/Lunar-Flash/releases/tag/1.0.0).
+
 It does the aiming at the target in one step
 
 Not only follows enemies in target mode
