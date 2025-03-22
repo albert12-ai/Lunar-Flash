@@ -86,8 +86,8 @@ class Aimbot:
             "confidence": 0.45,                  # Confidence threshold for detections
             "iou": 0.05,                       # IoU threshold for detections
             "use_trigger_bot": False,            # Whether to use triggerbot
-            "aiming_lerp_factor": 0.5,           # Lerp factor while aiming
-            "not_aiming_lerp_factor": 0.5,       # Lerp factor while not aiming
+            "aiming_lerp_factor": 0.5,           # Lerp factor while aiming (csak simításra!)
+            "not_aiming_lerp_factor": 0.5,       # Lerp factor while not aiming (csak simításra!)
             "box_constant": 320,                 # Detection box constant (size)
             "triggerbot_threshold": 10,          # Triggerbot activation range
             "max_aim_delta": 50,                 # Maximum aim delta in pixels
@@ -124,8 +124,8 @@ class Aimbot:
         self.conf_thresh = self.config.get("confidence", 0.45)
         self.iou_thresh = self.config.get("iou", 0.05)
         self.triggerbot_enabled = self.config.get("use_trigger_bot", False)
-        self.aim_smooth = self.config.get("aiming_lerp_factor", 0.5)
-        self.idle_smooth = self.config.get("not_aiming_lerp_factor", 0.5)
+        self.aim_smooth = self.config.get("aiming_lerp_factor", 0.5)      # Csak simítás
+        self.idle_smooth = self.config.get("not_aiming_lerp_factor", 0.5)   # Csak simítás
         self.detection_size = self.config.get("box_constant", 320)
         self.triggerbot_range = self.config.get("triggerbot_threshold", 10)
         self.max_aim_delta = self.config.get("max_aim_delta", 50)
@@ -141,6 +141,7 @@ class Aimbot:
         xy_sens = self.sens_settings.get("xy_sens", 5.0)
         targeting_sens = self.sens_settings.get("targeting_sens", xy_sens)
         print("[INFO] In-game aiming sensitivity must match the scope sensitivity!")
+        # A sensitivity a mozgás mértékét szabályozza
         self.sens_settings["xy_scale"] = 10 / xy_sens
         self.sens_settings["targeting_scale"] = 1000 / (targeting_sens * xy_sens)
     
@@ -290,7 +291,6 @@ class Aimbot:
 
                     head_x = int((x1 + x2) / 2)
                     head_y = int((y1 + y2) / 2 - h / aim_height)
-                    # Clamp: head_y should never fall outside the box
                     head_y = min(max(head_y, y1), y2)
                     
                     if x1 < 15 or (x1 < self.detection_size / 5 and y2 > self.detection_size / 1.2):
@@ -331,19 +331,27 @@ class Aimbot:
 
     def aim(self, x, y):
         """
-        Calculate the movement vector required to reach the target.
-        The dynamic aim delta depends on the target distance,
-        but never falls below the configured minimum nor exceeds the maximum pixel step.
+        A cél eléréséhez szükséges mozgásvektor számítása:
+        1. A sensitivity (xy_scale vagy targeting_scale) határozza meg a teljes elmozdulás nagyságát.
+        2. A smooth faktor (aim_smooth vagy idle_smooth) kizárólag a simításért felel.
+        3. A dinamikus maximum lépést is figyelembe vesszük.
         """
         if self.is_aiming():
+            # Sensitivity faktor kiválasztása: normál vagy ADS mód szerint
+            sens_factor = self.sens_settings["xy_scale"] if not self.is_ads() else self.sens_settings["targeting_scale"]
+            # Smooth faktor a simításra
             smooth_factor = self.aim_smooth if self.is_ads() else self.idle_smooth
-            new_x = center_x + (x - center_x) * smooth_factor
-            new_y = center_y + (y - center_y) * smooth_factor
-            dx = new_x - center_x
-            dy = new_y - center_y
-
+            
+            # Teljes mozgás a sensitivity alapján
+            raw_dx = (x - center_x) * sens_factor
+            raw_dy = (y - center_y) * sens_factor
+            
+            # Smooth alkalmazása a sima mozgásért
+            dx = raw_dx * smooth_factor
+            dy = raw_dy * smooth_factor
+            
             current_magnitude = math.hypot(dx, dy)
-            d = math.dist((x, y), (center_x, center_y))
+            d = math.hypot(x - center_x, y - center_y)
             norm_factor = self.detection_size / 2
 
             dynamic_max_delta = self.max_aim_delta * (d / norm_factor)
