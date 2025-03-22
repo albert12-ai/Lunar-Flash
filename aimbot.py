@@ -72,25 +72,27 @@ class Aimbot:
     config_path = "lib/config/config.json"
     if not os.path.exists(config_path):
         default_config = {
-            "xy_sens": 5.0,          
-            "targeting_sens": 5.0,    
-            "xy_scale": 10/5.0,        
-            "targeting_scale": 1000/(5.0*5.0),  
-            "toggle_key_code": 0x70, 
-            "exit_key_code": 0x71,
-            "aim_key_code": 0x06, 
-            "min_aim_height": 2.0, 
-            "max_aim_height": 4.0, 
-            "min_box_height": 50,
-            "max_box_height": 300, 
-            "confidence": 0.45, 
-            "iou": 0.05, 
-            "use_trigger_bot": False,
-            "aiming_lerp_factor": 0.5, 
-            "not_aiming_lerp_factor": 0.5, 
-            "box_constant": 320,
-            "triggerbot_threshold": 10,
-            "max_aim_delta": 50     
+            "xy_sens": 5.0,                     # XY sensitivity
+            "targeting_sens": 5.0,               # Targeting sensitivity
+            "xy_scale": 10/5.0,                  # XY scale factor
+            "targeting_scale": 1000/(5.0*5.0),   # Targeting scale factor
+            "toggle_key_code": 0x70,             # Toggle key (F1)
+            "exit_key_code": 0x71,               # Exit key (F2)
+            "aim_key_code": 0x06,                # Aim key (usually mouse button)
+            "min_aim_height": 2.0,               # Minimum aim height
+            "max_aim_height": 4.0,               # Maximum aim height
+            "min_box_height": 50,                # Minimum box height
+            "max_box_height": 300,               # Maximum box height
+            "confidence": 0.45,                  # Confidence threshold for detections
+            "iou": 0.05,                       # IoU threshold for detections
+            "use_trigger_bot": False,            # Whether to use triggerbot
+            "aiming_lerp_factor": 0.5,           # Lerp factor while aiming
+            "not_aiming_lerp_factor": 0.5,       # Lerp factor while not aiming
+            "box_constant": 320,                 # Detection box constant (size)
+            "triggerbot_threshold": 10,          # Triggerbot activation range
+            "max_aim_delta": 50,                 # Maximum aim delta in pixels
+            "min_aim_delta": 5,                  # Minimum aim delta in pixels
+            "max_move_pixels": 100               # Maximum pixel movement allowed
         }
         os.makedirs("lib/config", exist_ok=True)
         with open(config_path, "w") as f:
@@ -127,50 +129,46 @@ class Aimbot:
         self.detection_size = self.config.get("box_constant", 320)
         self.triggerbot_range = self.config.get("triggerbot_threshold", 10)
         self.max_aim_delta = self.config.get("max_aim_delta", 50)
+        self.min_aim_delta = self.config.get("min_aim_delta", 5)
+        self.max_move_pixels = self.config.get("max_move_pixels", 100)
 
-        # Frissítjük a skálázást az érzékenységi értékek alapján
         self.update_scaling()
 
         self.key_binding_mode = None
         self.init_gui()
 
     def update_scaling(self):
-        """
-      
-        """
         xy_sens = self.sens_settings.get("xy_sens", 5.0)
         targeting_sens = self.sens_settings.get("targeting_sens", xy_sens)
-        print("[INFO] Your in-game targeting sensitivity must be the same as your scoping sensitivity")
+        print("[INFO] In-game aiming sensitivity must match the scope sensitivity!")
         self.sens_settings["xy_scale"] = 10 / xy_sens
         self.sens_settings["targeting_scale"] = 1000 / (targeting_sens * xy_sens)
     
     def init_gui(self):
         dpg.create_context()
-        dpg.create_viewport(title="Aimbot Configuration", width=400, height=800, resizable=False)
-        with dpg.window(label="Settings", width=400, height=800):
+        dpg.create_viewport(title="Aimbot Configuration", width=400, height=900, resizable=False)
+        with dpg.window(label="Settings", width=400, height=900):
             with dpg.group():
                 dpg.add_text("Key Bindings")
                 with dpg.group(horizontal=True):
-                    dpg.add_text("Toggle Key: ")
+                    dpg.add_text("Toggle key: ")
                     self.toggle_key_label = dpg.add_text(f"0x{self.toggle_key:02X}")
                     dpg.add_button(label="Set", callback=lambda: self.set_key_binding("toggle"))
                 with dpg.group(horizontal=True):
-                    dpg.add_text("Exit Key: ")
+                    dpg.add_text("Exit key: ")
                     self.exit_key_label = dpg.add_text(f"0x{self.exit_key:02X}")
                     dpg.add_button(label="Set", callback=lambda: self.set_key_binding("exit"))
                 with dpg.group(horizontal=True):
-                    dpg.add_text("Aim Key: ")
+                    dpg.add_text("Aim key: ")
                     self.aim_key_label = dpg.add_text(f"0x{self.aim_key:02X}")
                     dpg.add_button(label="Set", callback=lambda: self.set_key_binding("aim"))
             
             with dpg.group():
                 dpg.add_text("Sensitivity")
-                # Új input mezők az érzékenységi értékekhez
                 dpg.add_input_float(label="XY Sensitivity", default_value=self.sens_settings.get("xy_sens", 5.0),
                                       callback=lambda s, a: self.update_setting("xy_sens", a))
-                dpg.add_input_float(label="Targeting Sensitivity", default_value=self.sens_settings.get("targeting_sens", 5.0),
+                dpg.add_input_float(label="Aiming Sensitivity", default_value=self.sens_settings.get("targeting_sens", 5.0),
                                       callback=lambda s, a: self.update_setting("targeting_sens", a))
-                # Megjelenítjük a kiszámolt skálázási értékeket (csak olvasható)
                 dpg.add_input_float(label="XY Scale", default_value=self.sens_settings["xy_scale"], readonly=True)
                 dpg.add_input_float(label="ADS Scale", default_value=self.sens_settings["targeting_scale"], readonly=True)
             
@@ -188,6 +186,8 @@ class Aimbot:
                 dpg.add_input_float(label="Idle Smoothing", default_value=self.idle_smooth, callback=lambda s, a: setattr(self, "idle_smooth", a))
                 dpg.add_input_float(label="Detection Area", default_value=self.detection_size, callback=lambda s, a: setattr(self, "detection_size", a))
                 dpg.add_input_float(label="Max Aim Delta", default_value=self.max_aim_delta, callback=lambda s, a: setattr(self, "max_aim_delta", a))
+                dpg.add_input_float(label="Min Aim Delta", default_value=self.min_aim_delta, callback=lambda s, a: setattr(self, "min_aim_delta", a))
+                dpg.add_input_int(label="Max Pixel Movement", default_value=self.max_move_pixels, callback=lambda s, a: setattr(self, "max_move_pixels", a))
             
             dpg.add_button(label="Save Configuration", callback=self.save_config)
         
@@ -201,10 +201,8 @@ class Aimbot:
         self.sens_settings[key] = value
         if key in ["xy_sens", "targeting_sens"]:
             self.update_scaling()
-        
 
     def save_config(self):
-       
         self.update_scaling()
         config = {
             "xy_sens": self.sens_settings.get("xy_sens", 5.0),
@@ -225,7 +223,9 @@ class Aimbot:
             "not_aiming_lerp_factor": self.idle_smooth,
             "box_constant": self.detection_size,
             "triggerbot_threshold": self.triggerbot_range,
-            "max_aim_delta": self.max_aim_delta
+            "max_aim_delta": self.max_aim_delta,
+            "min_aim_delta": self.min_aim_delta,
+            "max_move_pixels": self.max_move_pixels
         }
         with open(self.config_path, "w") as f:
             json.dump(config, f, indent=4)
@@ -290,6 +290,8 @@ class Aimbot:
 
                     head_x = int((x1 + x2) / 2)
                     head_y = int((y1 + y2) / 2 - h / aim_height)
+                    # Clamp: head_y should never fall outside the box
+                    head_y = min(max(head_y, y1), y2)
                     
                     if x1 < 15 or (x1 < self.detection_size / 5 and y2 > self.detection_size / 1.2):
                         continue
@@ -328,24 +330,25 @@ class Aimbot:
             dpg.render_dearpygui_frame()
 
     def aim(self, x, y):
+        """
+        Calculate the movement vector required to reach the target.
+        The dynamic aim delta depends on the target distance,
+        but never falls below the configured minimum nor exceeds the maximum pixel step.
+        """
         if self.is_aiming():
-           
             smooth_factor = self.aim_smooth if self.is_ads() else self.idle_smooth
-            if self.is_ads():
-                sensitivity_scale = self.sens_settings.get("targeting_scale", 1)
-            else:
-                sensitivity_scale = self.sens_settings.get("xy_scale", 1)
+            new_x = center_x + (x - center_x) * smooth_factor
+            new_y = center_y + (y - center_y) * smooth_factor
+            dx = new_x - center_x
+            dy = new_y - center_y
 
-           
-            dx = (x - center_x) * smooth_factor * sensitivity_scale
-            dy = (y - center_y) * smooth_factor * sensitivity_scale
-
-            
             current_magnitude = math.hypot(dx, dy)
             d = math.dist((x, y), (center_x, center_y))
             norm_factor = self.detection_size / 2
+
             dynamic_max_delta = self.max_aim_delta * (d / norm_factor)
-            dynamic_max_delta = max(dynamic_max_delta, 5)
+            dynamic_max_delta = max(dynamic_max_delta, self.min_aim_delta)
+            dynamic_max_delta = min(dynamic_max_delta, self.max_move_pixels)
 
             if current_magnitude > dynamic_max_delta:
                 scale = dynamic_max_delta / current_magnitude
